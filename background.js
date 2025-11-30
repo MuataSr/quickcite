@@ -47,6 +47,11 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       // Save the quote to local storage
       await saveQuoteToStorage(quote);
 
+      // Notify popup to refresh (if open)
+      chrome.runtime.sendMessage({ action: 'refreshQuotes' }).catch(() => {
+        // Popup might not be open, ignore error
+      });
+
       // Provide user feedback via notification
       await showNotification(quote);
 
@@ -109,3 +114,56 @@ async function showNotification(quote) {
 
   console.log(`Notification: Quote from "${truncatedTitle}" saved successfully`);
 }
+
+// ============================================================================
+// MESSAGE HANDLER: Handle requests from popup
+// ============================================================================
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log('Background received message:', message);
+
+  if (message.action === 'getQuotes') {
+    // Retrieve all quotes
+    chrome.storage.local.get(['quotes']).then(result => {
+      sendResponse({ success: true, quotes: result.quotes || [] });
+    }).catch(error => {
+      console.error('Error getting quotes:', error);
+      sendResponse({ success: false, error: error.message });
+    });
+    return true; // Indicates async response
+
+  } else if (message.action === 'deleteQuote') {
+    // Delete a specific quote
+    const quoteId = message.quoteId;
+    chrome.storage.local.get(['quotes']).then(result => {
+      const quotes = result.quotes || [];
+      const updatedQuotes = quotes.filter(q => q.id !== quoteId);
+      return chrome.storage.local.set({ quotes: updatedQuotes });
+    }).then(() => {
+      sendResponse({ success: true });
+    }).catch(error => {
+      console.error('Error deleting quote:', error);
+      sendResponse({ success: false, error: error.message });
+    });
+    return true;
+
+  } else if (message.action === 'clearAllQuotes') {
+    // Clear all quotes
+    chrome.storage.local.set({ quotes: [] }).then(() => {
+      sendResponse({ success: true });
+    }).catch(error => {
+      console.error('Error clearing quotes:', error);
+      sendResponse({ success: false, error: error.message });
+    });
+    return true;
+
+  } else if (message.action === 'notifyQuoteSaved') {
+    // Notify popup to refresh quotes
+    chrome.runtime.sendMessage({ action: 'refreshQuotes' }).catch(() => {
+      // Popup might not be open, ignore error
+    });
+    sendResponse({ success: true });
+  }
+
+  // Always return true for async message handling
+  return true;
+});

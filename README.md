@@ -19,7 +19,7 @@ A Chrome extension that allows users to right-click selected text to save quotes
 
 *Screenshots will be added here*
 
-1. **Context Menu**: Right-click on selected text shows "Save this quote" option
+1. **Context Menu**: Right-click on selected text shows "Save Quote & Generate Citation" option
 2. **Popup Interface**: Clean list view of all saved quotes with metadata
 3. **Quote Detail**: Individual quote view with full citation information
 
@@ -37,7 +37,7 @@ This is a Manifest V3 Chrome extension. To install:
 
 1. **Save a Quote**:
    - Select text on any webpage
-   - Right-click and select "Save this quote"
+   - Right-click and select "Save Quote & Generate Citation"
    - The quote is automatically saved with citation metadata
 
 2. **View Quotes**:
@@ -58,9 +58,8 @@ quote-saver-citation-assistant/
 ├── popup.html             # Extension popup UI
 ├── popup.js               # Popup functionality
 ├── styles.css             # Popup styling
-├── icons/
-│   └── icon48.png         # Extension icon
-└── _metadata/             # Development notes and metadata
+└── icons/
+    └── icon48.png         # Extension icon (48x48px)
 ```
 
 ## Permissions

@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Quote Saver & Citation Assistant",
+  "version": "1.0.0",
+  "description": "Save quotes from the web with one click and generate MLA/APA citations",
+  "permissions": [
+    "contextMenus",
+    "storage",
+    "activeTab"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Quote Saver & Citation Assistant"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "48": "icons/icon48.png"
+  },
+  "minimum_chrome_version": "88"
+}

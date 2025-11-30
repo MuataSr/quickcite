@@ -15,18 +15,32 @@
         <span id="quoteCount" class="quote-count">0 quotes</span>
       </div>
       <button id="refreshBtn" class="icon-btn" title="Refresh quotes">
-        <span>ª</span>
+        <span>ÔøΩ</span>
       </button>
     </header>
 
-    <!-- Controls Section -->
+    <!-- Tabs Navigation -->
+    <div class="tabs">
+      <button id="quotesTab" class="tab-btn active" data-tab="quotes">
+        <span class="tab-icon">üìö</span>
+        Quotes
+      </button>
+      <button id="settingsTab" class="tab-btn" data-tab="settings">
+        <span class="tab-icon">‚öôÔ∏è</span>
+        Settings
+      </button>
+    </div>
+
+    <!-- Tab Content: Quotes -->
+    <div id="quotesTabContent" class="tab-content active">
+      <!-- Controls Section -->
     <div class="controls">
       <button id="exportBtn" class="btn btn-primary">
-        <span class="btn-icon">=Â</span>
+        <span class="btn-icon">=ÔøΩ</span>
         Export All
       </button>
       <button id="clearAllBtn" class="btn btn-danger">
-        <span class="btn-icon">=—</span>
+        <span class="btn-icon">=ÔøΩ</span>
         Clear All
       </button>
     </div>
@@ -35,11 +49,64 @@
     <div id="quoteList" class="quote-list">
       <!-- Empty State -->
       <div id="emptyState" class="empty-state">
-        <div class="empty-icon">=¨</div>
+        <div class="empty-icon">=ÔøΩ</div>
         <h3>No quotes saved yet</h3>
         <p>Select text on any webpage, right-click, and choose</p>
         <p><strong>"Save Quote & Generate Citation"</strong></p>
         <p class="hint">Then return here to view your collection!</p>
+      </div>
+    </div>
+    </div>
+
+    <!-- Tab Content: Settings -->
+    <div id="settingsTabContent" class="tab-content">
+      <div class="settings-container">
+        <h3>Export Preferences</h3>
+        <div class="setting-item">
+          <label class="checkbox-label">
+            <input type="checkbox" id="includeMLA" checked>
+            <span>Include MLA citations in export</span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label class="checkbox-label">
+            <input type="checkbox" id="includeAPA" checked>
+            <span>Include APA citations in export</span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label class="checkbox-label">
+            <input type="checkbox" id="includeMetadata" checked>
+            <span>Include metadata in export</span>
+          </label>
+        </div>
+
+        <h3>Display Preferences</h3>
+        <div class="setting-item">
+          <label for="sortOrder">Sort order:</label>
+          <select id="sortOrder" class="select-input">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </div>
+
+        <div class="setting-item">
+          <label class="checkbox-label">
+            <input type="checkbox" id="autoRefresh" checked>
+            <span>Auto-refresh popup when quotes are saved</span>
+          </label>
+        </div>
+
+        <div class="settings-actions">
+          <button id="saveSettingsBtn" class="btn btn-primary">
+            <span class="btn-icon">üíæ</span>
+            Save Settings
+          </button>
+          <button id="resetSettingsBtn" class="btn btn-secondary">
+            <span class="btn-icon">üîÑ</span>
+            Reset to Default
+          </button>
+        </div>
       </div>
     </div>
 
@@ -94,7 +161,7 @@
       </div>
       <div class="modal-footer">
         <button id="deleteQuoteBtn" class="btn btn-danger">
-          <span class="btn-icon">=—</span>
+          <span class="btn-icon">=ÔøΩ</span>
           Delete Quote
         </button>
         <button id="closeModalBtn" class="btn btn-secondary">Close</button>

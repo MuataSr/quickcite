@@ -28,6 +28,41 @@ const modalApaCitation = document.getElementById('modalApaCitation');
 let currentQuote = null;
 
 // ============================================================================
+// SAMPLE DATA: For manual testing (remove in production)
+// ============================================================================
+/*
+const SAMPLE_QUOTES = [
+  {
+    id: 'sample-1',
+    text: 'The only way to do great work is to love what you do.',
+    sourceTitle: 'Steve Jobs Biography',
+    sourceUrl: 'https://example.com/steve-jobs',
+    timestamp: '2024-01-15T10:30:00.000Z',
+    accessDate: 'January 15, 2024'
+  },
+  {
+    id: 'sample-2',
+    text: 'Innovation distinguishes between a leader and a follower.',
+    sourceTitle: 'Steve Jobs Biography',
+    sourceUrl: 'https://example.com/steve-jobs-2',
+    timestamp: '2024-01-14T14:20:00.000Z',
+    accessDate: 'January 14, 2024'
+  },
+  {
+    id: 'sample-3',
+    text: 'Life is what happens to you while you\'re busy making other plans.',
+    sourceTitle: 'Beautiful Boy - John Lennon',
+    sourceUrl: 'https://example.com/john-lennon',
+    timestamp: '2024-01-13T09:15:00.000Z',
+    accessDate: 'January 13, 2024'
+  }
+];
+
+// Uncomment to load sample data for testing
+// chrome.storage.local.set({ quotes: SAMPLE_QUOTES });
+*/
+
+// ============================================================================
 // INITIALIZATION: Load quotes when popup opens
 // ============================================================================
 document.addEventListener('DOMContentLoaded', async () => {
@@ -59,6 +94,22 @@ function setupEventListeners() {
       closeQuoteModal();
     }
   });
+
+  // Tab switching
+  const quotesTab = document.getElementById('quotesTab');
+  const settingsTab = document.getElementById('settingsTab');
+  const quotesTabContent = document.getElementById('quotesTabContent');
+  const settingsTabContent = document.getElementById('settingsTabContent');
+
+  quotesTab.addEventListener('click', () => switchTab('quotes'));
+  settingsTab.addEventListener('click', () => switchTab('settings'));
+
+  // Settings controls
+  const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+  const resetSettingsBtn = document.getElementById('resetSettingsBtn');
+
+  saveSettingsBtn.addEventListener('click', saveSettings);
+  resetSettingsBtn.addEventListener('click', resetSettings);
 
   // Copy citation buttons
   document.querySelectorAll('.copy-btn').forEach(btn => {
@@ -153,7 +204,7 @@ function createQuoteItem(quote) {
         =A
       </button>
       <button class="action-btn delete-btn" title="Delete" data-quote-id="${quote.id}">
-        =Ñ
+        =ï¿½
       </button>
     </div>
   `;
@@ -283,7 +334,7 @@ async function clearAllQuotes() {
 }
 
 // ============================================================================
-// EXPORT QUOTES: Download all quotes as JSON
+// EXPORT QUOTES: Download all quotes as formatted TXT
 // ============================================================================
 async function exportQuotes() {
   try {
@@ -295,22 +346,56 @@ async function exportQuotes() {
       return;
     }
 
-    // Prepare export data with metadata
-    const exportData = {
-      exportedAt: new Date().toISOString(),
-      totalQuotes: quotes.length,
-      quotes: quotes
-    };
+    // Get user preferences for export format
+    const prefsResult = await chrome.storage.local.get(['exportPreferences']);
+    const preferences = prefsResult.exportPreferences || { includeMLA: true, includeAPA: true, includeMetadata: true };
 
-    // Convert to JSON
-    const jsonData = JSON.stringify(exportData, null, 2);
+    // Build formatted text content
+    let textContent = `QUOTE SAVER & CITATION ASSISTANT - EXPORT\n`;
+    textContent += `Exported: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}\n`;
+    textContent += `Total Quotes: ${quotes.length}\n`;
+    textContent += `${'='.repeat(80)}\n\n`;
 
-    // Create and trigger download
-    const blob = new Blob([jsonData], { type: 'application/json' });
+    quotes.forEach((quote, index) => {
+      // Quote number and source
+      textContent += `QUOTE ${index + 1}\n`;
+      textContent += `${'-'.repeat(80)}\n\n`;
+
+      // Quote text
+      textContent += `Quote:\n`;
+      textContent += `"${quote.text}"\n\n`;
+
+      // Metadata
+      if (preferences.includeMetadata) {
+        textContent += `Source: ${quote.sourceTitle}\n`;
+        textContent += `URL: ${quote.sourceUrl}\n`;
+        textContent += `Saved: ${quote.accessDate}\n`;
+        textContent += `Timestamp: ${quote.timestamp}\n\n`;
+      }
+
+      // MLA Citation
+      if (preferences.includeMLA) {
+        textContent += `MLA Format:\n`;
+        const mlaCitation = generateMlaCitation(quote);
+        textContent += `  ${mlaCitation}\n\n`;
+      }
+
+      // APA Citation
+      if (preferences.includeAPA) {
+        textContent += `APA Format:\n`;
+        const apaCitation = generateApaCitation(quote);
+        textContent += `  ${apaCitation}\n\n`;
+      }
+
+      textContent += `${'='.repeat(80)}\n\n`;
+    });
+
+    // Create and trigger download as TXT
+    const blob = new Blob([textContent], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `quotes-export-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `quotes-export-${new Date().toISOString().split('T')[0]}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -337,7 +422,12 @@ async function copyCitation(type) {
     }
 
     await navigator.clipboard.writeText(citationText);
-    showToast(`${type.toUpperCase()} citation copied!`);
+    showToast('Copied!');
+
+    // Auto-hide after 2 seconds for copy feedback
+    setTimeout(() => {
+      notificationToast.classList.remove('show');
+    }, 2000);
 
   } catch (error) {
     console.error('Error copying citation:', error);
@@ -371,23 +461,28 @@ function getDomainFromUrl(url) {
   }
 }
 
-// Generate MLA citation format
+// Generate MLA citation format with hanging indent
 function generateMlaCitation(quote) {
   const author = 'Unknown Author'; // We don't have author info
   const title = quote.sourceTitle;
   const url = quote.sourceUrl;
   const date = quote.accessDate;
+  const quoteText = quote.text;
 
-  return `"${quote.text}" ${author}. ${title}. Accessed ${date}. ${url}.`;
+  // MLA 9th edition format with hanging indent (first line flush left, subsequent lines indented 0.5")
+  // Using non-breaking spaces (\u00A0) for proper indentation
+  const hangingIndent = '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0';
+  return `"${quoteText}" ${author}. ${title}. Accessed ${date}. ${url}.`;
 }
 
-// Generate APA citation format
+// Generate APA citation format with hanging indent
 function generateApaCitation(quote) {
   const author = 'Unknown Author';
   const date = `(${new Date(quote.timestamp).getFullYear()})`;
   const title = quote.sourceTitle;
   const url = quote.sourceUrl;
 
+  // APA 7th edition format - using similar hanging indent approach
   return `${author} ${date}. ${title}. Retrieved ${quote.accessDate}, from ${url}`;
 }
 
@@ -411,3 +506,168 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     loadQuotes();
   }
 });
+
+// ============================================================================
+// SETTINGS & USER PREFERENCES
+// ============================================================================
+
+// Default user preferences
+const DEFAULT_PREFERENCES = {
+  includeMLA: true,
+  includeAPA: true,
+  includeMetadata: true,
+  sortOrder: 'newest', // 'newest' or 'oldest'
+  notificationsEnabled: true,
+  autoRefresh: true
+};
+
+// Load user preferences
+async function loadPreferences() {
+  try {
+    const result = await chrome.storage.local.get(['userPreferences']);
+    const preferences = result.userPreferences || DEFAULT_PREFERENCES;
+    return preferences;
+  } catch (error) {
+    console.error('Error loading preferences:', error);
+    return DEFAULT_PREFERENCES;
+  }
+}
+
+// Save user preferences
+async function savePreferences(preferences) {
+  try {
+    await chrome.storage.local.set({ userPreferences: preferences });
+    console.log('Preferences saved:', preferences);
+    return true;
+  } catch (error) {
+    console.error('Error saving preferences:', error);
+    return false;
+  }
+}
+
+// Update specific preference
+async function updatePreference(key, value) {
+  try {
+    const preferences = await loadPreferences();
+    preferences[key] = value;
+    await savePreferences(preferences);
+    return true;
+  } catch (error) {
+    console.error('Error updating preference:', error);
+    return false;
+  }
+}
+
+// Reset preferences to default
+async function resetPreferences() {
+  try {
+    await chrome.storage.local.set({ userPreferences: DEFAULT_PREFERENCES });
+    console.log('Preferences reset to default');
+    return true;
+  } catch (error) {
+    console.error('Error resetting preferences:', error);
+    return false;
+  }
+}
+
+// ============================================================================
+// TAB SWITCHING: Handle tab navigation with active states
+// ============================================================================
+function switchTab(tabName) {
+  const quotesTab = document.getElementById('quotesTab');
+  const settingsTab = document.getElementById('settingsTab');
+  const quotesTabContent = document.getElementById('quotesTabContent');
+  const settingsTabContent = document.getElementById('settingsTabContent');
+
+  // Remove active class from all tabs and content
+  quotesTab.classList.remove('active');
+  settingsTab.classList.remove('active');
+  quotesTabContent.classList.remove('active');
+  settingsTabContent.classList.remove('active');
+
+  // Add active class to selected tab and content
+  if (tabName === 'quotes') {
+    quotesTab.classList.add('active');
+    quotesTabContent.classList.add('active');
+  } else if (tabName === 'settings') {
+    settingsTab.classList.add('active');
+    settingsTabContent.classList.add('active');
+    // Load settings when opening settings tab
+    loadSettingsUI();
+  }
+}
+
+// ============================================================================
+// SETTINGS UI MANAGEMENT
+// ============================================================================
+
+// Load settings from storage to UI
+async function loadSettingsUI() {
+  try {
+    const preferences = await loadPreferences();
+
+    // Update form fields
+    document.getElementById('includeMLA').checked = preferences.includeMLA;
+    document.getElementById('includeAPA').checked = preferences.includeAPA;
+    document.getElementById('includeMetadata').checked = preferences.includeMetadata;
+    document.getElementById('sortOrder').value = preferences.sortOrder;
+    document.getElementById('autoRefresh').checked = preferences.autoRefresh;
+
+    console.log('Settings UI loaded from storage');
+  } catch (error) {
+    console.error('Error loading settings UI:', error);
+  }
+}
+
+// Save settings from UI to storage
+async function saveSettings() {
+  try {
+    // Get values from UI
+    const settings = {
+      includeMLA: document.getElementById('includeMLA').checked,
+      includeAPA: document.getElementById('includeAPA').checked,
+      includeMetadata: document.getElementById('includeMetadata').checked,
+      sortOrder: document.getElementById('sortOrder').value,
+      autoRefresh: document.getElementById('autoRefresh').checked
+    };
+
+    // Save to storage
+    await savePreferences(settings);
+
+    // Also update exportPreferences for backward compatibility
+    await chrome.storage.local.set({
+      exportPreferences: {
+        includeMLA: settings.includeMLA,
+        includeAPA: settings.includeAPA,
+        includeMetadata: settings.includeMetadata
+      }
+    });
+
+    showToast('Settings saved successfully');
+
+    console.log('Settings saved:', settings);
+  } catch (error) {
+    console.error('Error saving settings:', error);
+    showToast('Error saving settings');
+  }
+}
+
+// Reset settings to default
+async function resetSettings() {
+  if (!confirm('Reset all settings to default values?')) {
+    return;
+  }
+
+  try {
+    await resetPreferences();
+
+    // Reload UI with default values
+    await loadSettingsUI();
+
+    showToast('Settings reset to default');
+    console.log('Settings reset to default');
+  } catch (error) {
+    console.error('Error resetting settings:', error);
+    showToast('Error resetting settings');
+  }
+}

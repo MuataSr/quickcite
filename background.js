@@ -30,12 +30,16 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         throw new Error('No text selected');
       }
 
+      // Extract author from page title or meta tags
+      const author = await extractAuthor(tab.url, tab.title);
+
       // Create quote object with the specified schema
       const quote = {
         id: crypto.randomUUID(), // Generate unique identifier
         text: selectedText.trim(), // Clean up whitespace
         sourceTitle: tab.title, // Current page title
         sourceUrl: tab.url, // Current page URL
+        author: author, // Extracted author name
         timestamp: new Date().toISOString(), // ISO 8601 timestamp
         accessDate: new Date().toLocaleDateString('en-US', {
           year: 'numeric',
@@ -167,3 +171,51 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // Always return true for async message handling
   return true;
 });
+
+// ============================================================================
+// AUTHOR EXTRACTION: Extract author name from page
+// ============================================================================
+async function extractAuthor(url, title) {
+  try {
+    // Try to extract author from page title
+    // Common patterns: "Title - By Author", "Title | By Author", "Title by Author"
+    const authorPatterns = [
+      /\s*[-–|]\s*By\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i,
+      /\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i,
+      /\s*[-–|]\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*[-–|]/,
+    ];
+
+    for (const pattern of authorPatterns) {
+      const match = title.match(pattern);
+      if (match && match[1]) {
+        return match[1].trim();
+      }
+    }
+
+    // If no author found in title, try to extract from URL (for some sites)
+    // This is a best-effort approach
+    const urlPatterns = [
+      /\/author\/([^\/\?#]+)/i,
+      /\/by\/([^\/\?#]+)/i,
+    ];
+
+    for (const pattern of urlPatterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        // Decode URL encoding and format the name
+        let author = decodeURIComponent(match[1]);
+        author = author.replace(/[-_]/g, ' ');
+        // Capitalize properly
+        author = author.replace(/\b\w/g, l => l.toUpperCase());
+        return author;
+      }
+    }
+
+    // If still no author found, return null (will display as "Unknown Author")
+    return null;
+
+  } catch (error) {
+    console.error('Error extracting author:', error);
+    return null;
+  }
+}

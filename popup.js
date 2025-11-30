@@ -201,10 +201,10 @@ function createQuoteItem(quote) {
     </div>
     <div class="quote-actions">
       <button class="action-btn view-btn" title="View Details" data-quote-id="${quote.id}">
-        =A
+        ℹ️
       </button>
       <button class="action-btn delete-btn" title="Delete" data-quote-id="${quote.id}">
-        =�
+        ✖
       </button>
     </div>
   `;
@@ -463,7 +463,8 @@ function getDomainFromUrl(url) {
 
 // Generate MLA citation format with hanging indent
 function generateMlaCitation(quote) {
-  const author = 'Unknown Author'; // We don't have author info
+  // Use extracted author or fallback to "Unknown Author"
+  const author = quote.author || 'Unknown Author';
   const title = quote.sourceTitle;
   const url = quote.sourceUrl;
   const date = quote.accessDate;
@@ -477,7 +478,8 @@ function generateMlaCitation(quote) {
 
 // Generate APA citation format with hanging indent
 function generateApaCitation(quote) {
-  const author = 'Unknown Author';
+  // Use extracted author or fallback to "Unknown Author"
+  const author = quote.author || 'Unknown Author';
   const date = `(${new Date(quote.timestamp).getFullYear()})`;
   const title = quote.sourceTitle;
   const url = quote.sourceUrl;

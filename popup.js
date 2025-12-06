@@ -594,32 +594,50 @@ function getDomainFromUrl(url) {
 // Generate MLA citation format with hanging indent
 function generateMlaCitation(quote) {
   // Use extracted author or fallback to "Unknown Author"
-  const author = quote.author || 'Unknown Author';
+  const authorFull = quote.author || 'Unknown Author';
   const title = quote.sourceTitle;
   const url = quote.sourceUrl;
   const date = quote.accessDate;
-  const quoteText = quote.text;
+
+  // Parse author name - assume format is "First Last" or "First Middle Last"
+  // Convert to "Last, First" format for MLA
+  let authorFormatted = authorFull;
+  if (authorFull && authorFull !== 'Unknown Author') {
+    const nameParts = authorFull.split(' ');
+    const lastName = nameParts.pop(); // Get last part
+    const firstNames = nameParts.join(' '); // Everything else is first name
+    authorFormatted = `${lastName}, ${firstNames}`;
+  }
 
   // MLA 9th edition format (Purdue OWL)
-  // Format: "Quote." Author. Website Title, URL, Accessed Date.
-  // Note: MLA recommends including article titles in quotes for specific articles
-  // and italics for the website/container name
-  return `"${quoteText}" ${author}. "${title}." Accessed ${date}. ${url}.`;
+  // Format: Last, First. "Title." Website, Date, URL.
+  // This is a bibliography entry for the SOURCE, not the quote
+  return `${authorFormatted}. "${title}." ${url}. Accessed ${date}.`;
 }
 
 // Generate APA citation format with hanging indent
 function generateApaCitation(quote) {
   // Use extracted author or fallback to "Unknown Author"
-  const author = quote.author || 'Unknown Author';
-  const date = `(${new Date(quote.timestamp).getFullYear()})`;
+  const authorFull = quote.author || 'Unknown Author';
+  const year = new Date(quote.timestamp).getUTCFullYear(); // Use UTC to avoid timezone issues
+  const date = `(${year})`;
   const title = quote.sourceTitle;
   const url = quote.sourceUrl;
 
+  // Parse author name - assume format is "First Last" or "First Middle Last"
+  // Convert to "Last, F." format for APA (first initial only)
+  let authorFormatted = authorFull;
+  if (authorFull && authorFull !== 'Unknown Author') {
+    const nameParts = authorFull.split(' ');
+    const lastName = nameParts.pop(); // Get last part
+    const firstInitial = nameParts[0] ? nameParts[0].charAt(0) + '.' : ''; // First initial only
+    authorFormatted = `${lastName}, ${firstInitial}`;
+  }
+
   // APA 7th edition format (Purdue OWL)
-  // Format: Author, A. A. (Year). Title of article. Website Title. URL
-  // Note: Article titles are not italicized in APA 7th edition (only journal/book titles)
-  // URLs should end with a period
-  return `${author} ${date}. ${title}. Retrieved ${quote.accessDate}, from ${url}.`;
+  // Format: Last, F. (Year). Title. Website. URL
+  // This is a bibliography entry for the SOURCE, not the quote
+  return `${authorFormatted} ${date}. ${title}. ${url}`;
 }
 
 // Show toast notification

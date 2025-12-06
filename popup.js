@@ -591,16 +591,61 @@ function getDomainFromUrl(url) {
   }
 }
 
+// Helper function to parse source title and extract clean title + website name
+function parseTitleAndWebsite(sourceTitle) {
+  // Handle titles that include website info like "Title | Website Name | by Author"
+  // or "Title - Website Name - by Author"
+
+  let cleanTitle = sourceTitle;
+  let websiteName = '';
+
+  // Try to extract website name using common separators
+  if (sourceTitle.includes('|')) {
+    const parts = sourceTitle.split('|');
+    cleanTitle = parts[0].trim();
+    // Look for website in remaining parts
+    for (let i = 1; i < parts.length; i++) {
+      const part = parts[i].trim();
+      if (!part.toLowerCase().startsWith('by ') && part.length > 2) {
+        websiteName = part;
+        break;
+      }
+    }
+  } else if (sourceTitle.includes(' - ')) {
+    const parts = sourceTitle.split(' - ');
+    cleanTitle = parts[0].trim();
+    // Look for website in remaining parts
+    for (let i = 1; i < parts.length; i++) {
+      const part = parts[i].trim();
+      if (!part.toLowerCase().startsWith('by ') && part.length > 2) {
+        websiteName = part;
+        break;
+      }
+    }
+  }
+
+  // Clean up the website name - remove "by Author" if present
+  if (websiteName) {
+    websiteName = websiteName.replace(/\s*\|\s*by\s+.*$/i, '');
+    websiteName = websiteName.replace(/\s*-\s*by\s+.*$/i, '');
+    websiteName = websiteName.trim();
+  }
+
+  return { cleanTitle, websiteName };
+}
+
 // Generate MLA citation format with hanging indent
 function generateMlaCitation(quote) {
   // Use extracted author or fallback to "Unknown Author"
   const authorFull = quote.author || 'Unknown Author';
-  const title = quote.sourceTitle;
   const url = quote.sourceUrl;
   const date = quote.accessDate;
 
+  // Parse title to extract clean title and website name
+  const { cleanTitle, websiteName } = parseTitleAndWebsite(quote.sourceTitle);
+
   // Parse author name - assume format is "First Last" or "First Middle Last"
-  // Convert to "Last, First" format for MLA
+  // Convert to "Last, First" format for MLA (full first name)
   let authorFormatted = authorFull;
   if (authorFull && authorFull !== 'Unknown Author') {
     const nameParts = authorFull.split(' ');
@@ -610,9 +655,15 @@ function generateMlaCitation(quote) {
   }
 
   // MLA 9th edition format (Purdue OWL)
-  // Format: Last, First. "Title." Website, Date, URL.
+  // Format: Last, First. "Title." Website Name, URL. Accessed Date.
   // This is a bibliography entry for the SOURCE, not the quote
-  return `${authorFormatted}. "${title}." ${url}. Accessed ${date}.`;
+  let citation = `${authorFormatted}. "${cleanTitle}."`;
+  if (websiteName) {
+    citation += ` <em>${websiteName}</em>,`;
+  }
+  citation += ` ${url}. Accessed ${date}.`;
+
+  return citation;
 }
 
 // Generate APA citation format with hanging indent
@@ -621,8 +672,10 @@ function generateApaCitation(quote) {
   const authorFull = quote.author || 'Unknown Author';
   const year = new Date(quote.timestamp).getUTCFullYear(); // Use UTC to avoid timezone issues
   const date = `(${year})`;
-  const title = quote.sourceTitle;
   const url = quote.sourceUrl;
+
+  // Parse title to extract clean title and website name
+  const { cleanTitle, websiteName } = parseTitleAndWebsite(quote.sourceTitle);
 
   // Parse author name - assume format is "First Last" or "First Middle Last"
   // Convert to "Last, F." format for APA (first initial only)
@@ -635,9 +688,15 @@ function generateApaCitation(quote) {
   }
 
   // APA 7th edition format (Purdue OWL)
-  // Format: Last, F. (Year). Title. Website. URL
+  // Format: Last, F. (Year). Title. Website Name. URL
   // This is a bibliography entry for the SOURCE, not the quote
-  return `${authorFormatted} ${date}. ${title}. ${url}`;
+  let citation = `${authorFormatted} ${date}. ${cleanTitle}.`;
+  if (websiteName) {
+    citation += ` <em>${websiteName}</em>.`;
+  }
+  citation += ` ${url}`;
+
+  return citation;
 }
 
 // Show toast notification

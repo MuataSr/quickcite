@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QuickCite</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 <body>
   <div class="popup-container">
@@ -16,18 +15,28 @@
         <span id="quoteCount" class="quote-count">0 quotes</span>
       </div>
       <button id="refreshBtn" class="icon-btn" title="Refresh quotes">
-        <i data-lucide="rotate-ccw"></i>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 1 1-2.64-6.36"></path>
+          <path d="M21 3v6h-6"></path>
+        </svg>
       </button>
     </header>
 
     <!-- Tabs Navigation -->
     <div class="tabs">
       <button id="quotesTab" class="tab-btn active" data-tab="quotes">
-        <i data-lucide="book-open" class="tab-icon"></i>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M4 4v15.5A2.5 2.5 0 0 1 6.5 22H20V6a2 2 0 0 0-2-2H6"></path>
+        </svg>
         Quotes
       </button>
       <button id="settingsTab" class="tab-btn" data-tab="settings">
-        <i data-lucide="settings" class="tab-icon"></i>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 1v6m0 6v6"></path>
+          <path d="m21 12-6 0m-6 0-6 0"></path>
+        </svg>
         Settings
       </button>
     </div>
@@ -126,18 +135,29 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2>Quote Details</h2>
-<button id="closeModal" class="icon-btn close-btn" title="Close">
-          <i data-lucide="x"></i>
+        <button id="closeModal" class="icon-btn close-btn" title="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18M6 6l12 12"></path>
+          </svg>
         </button>
       </div>
       <!-- Modal Tabs -->
       <div class="modal-tabs">
         <button id="modalInfoTab" class="modal-tab-btn active" data-tab="info">
-          <i data-lucide="file-text" class="tab-icon"></i>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <path d="M14 2v6h6"></path>
+            <path d="M16 13H8"></path>
+            <path d="M16 17H8"></path>
+            <path d="M10 9H8"></path>
+          </svg>
           Quote Info
         </button>
         <button id="modalCitationsTab" class="modal-tab-btn" data-tab="citations">
-          <i data-lucide="book-open" class="tab-icon"></i>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M4 4v15.5A2.5 2.5 0 0 1 6.5 22H20V6a2 2 0 0 0-2-2H6"></path>
+          </svg>
           Citations
         </button>
       </div>

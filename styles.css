@@ -115,6 +115,27 @@ body {
   font-size: 16px;
 }
 
+/* SVG Icon Styling */
+.tab-icon svg,
+.action-btn svg,
+.icon-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+  vertical-align: middle;
+}
+
+.icon-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.action-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: #666;
+}
+
 .tab-content {
   display: none;
   flex: 1;

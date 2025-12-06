@@ -66,11 +66,6 @@ const SAMPLE_QUOTES = [
 // INITIALIZATION: Load quotes when popup opens
 // ============================================================================
 document.addEventListener('DOMContentLoaded', async () => {
-  // Initialize Lucide icons
-  if (typeof lucide !== 'undefined') {
-    lucide.createIcons();
-  }
-
   await loadQuotes();
   setupEventListeners();
 });
@@ -231,10 +226,19 @@ function createQuoteItem(quote) {
     </div>
     <div class="quote-actions">
       <button class="action-btn view-btn" title="View Details" data-quote-id="${quote.id}">
-        <i data-lucide="eye"></i>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
       </button>
       <button class="action-btn delete-btn" title="Delete" data-quote-id="${quote.id}">
-        <i data-lucide="trash-2"></i>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18"></path>
+          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+          <path d="M10 11v6"></path>
+          <path d="M14 11v6"></path>
+        </svg>
       </button>
     </div>
   `;
@@ -245,11 +249,6 @@ function createQuoteItem(quote) {
 
   viewBtn.addEventListener('click', () => showQuoteDetails(quote));
   deleteBtn.addEventListener('click', () => deleteQuote(quote.id));
-
-  // Initialize Lucide icons for dynamically created elements
-  if (typeof lucide !== 'undefined') {
-    lucide.createIcons();
-  }
 
   return item;
 }

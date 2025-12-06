@@ -290,8 +290,8 @@ function showQuoteDetails(quote) {
   const mlaCitation = generateMlaCitation(quote);
   const apaCitation = generateApaCitation(quote);
 
-  modalMlaCitation.textContent = mlaCitation;
-  modalApaCitation.textContent = apaCitation;
+  modalMlaCitation.innerHTML = mlaCitation;
+  modalApaCitation.innerHTML = apaCitation;
 
   // Show modal
   quoteModal.style.display = 'flex';
@@ -592,12 +592,18 @@ function getDomainFromUrl(url) {
 }
 
 // Helper function to parse source title and extract clean title + website name
-function parseTitleAndWebsite(sourceTitle) {
+function parseTitleAndWebsite(sourceTitle, sourceUrl, sourceName = null) {
   // Handle titles that include website info like "Title | Website Name | by Author"
   // or "Title - Website Name - by Author"
 
   let cleanTitle = sourceTitle;
   let websiteName = '';
+
+  // If sourceName is provided (e.g., "arXiv" from API), use it directly
+  if (sourceName) {
+    websiteName = sourceName;
+    return { cleanTitle, websiteName };
+  }
 
   // Try to extract website name using common separators
   if (sourceTitle.includes('|')) {
@@ -631,18 +637,53 @@ function parseTitleAndWebsite(sourceTitle) {
     websiteName = websiteName.trim();
   }
 
+  // Fallback: Extract website name from URL hostname if not found in title
+  if (!websiteName && sourceUrl) {
+    try {
+      const urlObj = new URL(sourceUrl);
+      let hostname = urlObj.hostname.replace(/^www\./, '');
+      // Capitalize first letter of hostname for display
+      websiteName = hostname.charAt(0).toUpperCase() + hostname.slice(1);
+    } catch (e) {
+      // Invalid URL, leave websiteName empty
+    }
+  }
+
   return { cleanTitle, websiteName };
+}
+
+// Format URL for MLA (remove https:// and http://)
+function formatUrlForMla(url) {
+  return url.replace(/^https?:\/\//, '');
+}
+
+// Format date for MLA (Day Month Year, e.g., "15 Mar. 2024")
+function formatDateForMla(dateString) {
+  const date = new Date(dateString);
+  const day = date.getDate();
+  const months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'];
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  return `${day} ${month} ${year}`;
+}
+
+// Convert title to sentence case for APA (capitalize first word, proper nouns remain)
+function toSentenceCase(title) {
+  if (!title) return title;
+  // Lowercase everything, then capitalize first character
+  const lower = title.toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
 
 // Generate MLA citation format with hanging indent
 function generateMlaCitation(quote) {
   // Use extracted author or fallback to "Unknown Author"
   const authorFull = quote.author || 'Unknown Author';
-  const url = quote.sourceUrl;
-  const date = quote.accessDate;
+  const url = formatUrlForMla(quote.sourceUrl);
+  const accessDate = formatDateForMla(quote.timestamp);
 
-  // Parse title to extract clean title and website name
-  const { cleanTitle, websiteName } = parseTitleAndWebsite(quote.sourceTitle);
+  // Parse title to extract clean title and website name (pass URL for fallback, sourceName for academic sources)
+  const { cleanTitle, websiteName } = parseTitleAndWebsite(quote.sourceTitle, quote.sourceUrl, quote.sourceName);
 
   // Parse author name - assume format is "First Last" or "First Middle Last"
   // Convert to "Last, First" format for MLA (full first name)
@@ -654,14 +695,14 @@ function generateMlaCitation(quote) {
     authorFormatted = `${lastName}, ${firstNames}`;
   }
 
-  // MLA 9th edition format (Purdue OWL)
-  // Format: Last, First. "Title." Website Name, URL. Accessed Date.
-  // This is a bibliography entry for the SOURCE, not the quote
+  // MLA 9th edition format
+  // Format: Last, First. "Title." Website Name, Access Date, URL.
+  // URLs omit https://, citation ends with period
   let citation = `${authorFormatted}. "${cleanTitle}."`;
   if (websiteName) {
     citation += ` <em>${websiteName}</em>,`;
   }
-  citation += ` ${url}. Accessed ${date}.`;
+  citation += ` Accessed ${accessDate}, ${url}.`;
 
   return citation;
 }
@@ -670,12 +711,15 @@ function generateMlaCitation(quote) {
 function generateApaCitation(quote) {
   // Use extracted author or fallback to "Unknown Author"
   const authorFull = quote.author || 'Unknown Author';
-  const year = new Date(quote.timestamp).getUTCFullYear(); // Use UTC to avoid timezone issues
-  const date = `(${year})`;
-  const url = quote.sourceUrl;
+  const timestamp = new Date(quote.timestamp);
+  const year = timestamp.getUTCFullYear();
+  const url = quote.sourceUrl; // APA keeps https://
 
-  // Parse title to extract clean title and website name
-  const { cleanTitle, websiteName } = parseTitleAndWebsite(quote.sourceTitle);
+  // Parse title to extract clean title and website name (pass URL for fallback, sourceName for academic sources)
+  const { cleanTitle, websiteName } = parseTitleAndWebsite(quote.sourceTitle, quote.sourceUrl, quote.sourceName);
+
+  // Convert title to sentence case for APA
+  const titleSentenceCase = toSentenceCase(cleanTitle);
 
   // Parse author name - assume format is "First Last" or "First Middle Last"
   // Convert to "Last, F." format for APA (first initial only)
@@ -687,12 +731,12 @@ function generateApaCitation(quote) {
     authorFormatted = `${lastName}, ${firstInitial}`;
   }
 
-  // APA 7th edition format (Purdue OWL)
-  // Format: Last, F. (Year). Title. Website Name. URL
-  // This is a bibliography entry for the SOURCE, not the quote
-  let citation = `${authorFormatted} ${date}. ${cleanTitle}.`;
+  // APA 7th edition format
+  // Format: Last, F. (Year). Title in sentence case. Site Name. URL
+  // Title is italicized, URL includes https://, NO trailing period after URL
+  let citation = `${authorFormatted} (${year}). <em>${titleSentenceCase}</em>.`;
   if (websiteName) {
-    citation += ` <em>${websiteName}</em>.`;
+    citation += ` ${websiteName}.`;
   }
   citation += ` ${url}`;
 

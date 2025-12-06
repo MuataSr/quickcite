@@ -1,4 +1,4 @@
-// Quote Saver & Citation Assistant - Popup Interface
+// QuickCite - Popup Interface
 // Handles quote display, management, and user interactions
 
 // ============================================================================
@@ -80,6 +80,12 @@ function setupEventListeners() {
   // Export button
   exportBtn.addEventListener('click', exportQuotes);
 
+  // Bibliography button
+  const bibliographyBtn = document.getElementById('bibliographyBtn');
+  if (bibliographyBtn) {
+    bibliographyBtn.addEventListener('click', generateBibliography);
+  }
+
   // Clear all button
   clearAllBtn.addEventListener('click', clearAllQuotes);
 
@@ -104,6 +110,17 @@ function setupEventListeners() {
   quotesTab.addEventListener('click', () => switchTab('quotes'));
   settingsTab.addEventListener('click', () => switchTab('settings'));
 
+  // Modal tab switching
+  const modalInfoTab = document.getElementById('modalInfoTab');
+  const modalCitationsTab = document.getElementById('modalCitationsTab');
+
+  if (modalInfoTab) {
+    modalInfoTab.addEventListener('click', () => switchModalTab('info'));
+  }
+  if (modalCitationsTab) {
+    modalCitationsTab.addEventListener('click', () => switchModalTab('citations'));
+  }
+
   // Settings controls
   const saveSettingsBtn = document.getElementById('saveSettingsBtn');
   const resetSettingsBtn = document.getElementById('resetSettingsBtn');
@@ -117,6 +134,14 @@ function setupEventListeners() {
       const citationType = e.target.dataset.citation;
       copyCitation(citationType);
     });
+  });
+
+  // Copy signal phrase buttons (using event delegation since buttons are in modal)
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('copy-phrase-btn')) {
+      const phraseTemplate = e.target.dataset.phrase;
+      copySignalPhrase(phraseTemplate);
+    }
   });
 }
 
@@ -231,6 +256,11 @@ function showQuoteDetails(quote) {
   // Fill in metadata
   modalSourceTitle.textContent = quote.sourceTitle;
   modalSourceTitle.href = quote.sourceUrl;
+
+  // Fill in author
+  const modalAuthor = document.getElementById('modalAuthor');
+  modalAuthor.textContent = quote.author || 'Unknown Author';
+
   modalSourceUrl.textContent = quote.sourceUrl;
   modalSourceUrl.href = quote.sourceUrl;
 
@@ -351,7 +381,7 @@ async function exportQuotes() {
     const preferences = prefsResult.exportPreferences || { includeMLA: true, includeAPA: true, includeMetadata: true };
 
     // Build formatted text content
-    let textContent = `QUOTE SAVER & CITATION ASSISTANT - EXPORT\n`;
+    let textContent = `QUICKCITE - EXPORT\n`;
     textContent += `Exported: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}\n`;
     textContent += `Total Quotes: ${quotes.length}\n`;
     textContent += `${'='.repeat(80)}\n\n`;
@@ -406,6 +436,97 @@ async function exportQuotes() {
   } catch (error) {
     console.error('Error exporting quotes:', error);
     showToast('Error exporting quotes');
+  }
+}
+
+// ============================================================================
+// GENERATE BIBLIOGRAPHY: Create MLA Works Cited and APA References page
+// ============================================================================
+async function generateBibliography() {
+  try {
+    const result = await chrome.storage.local.get(['quotes']);
+    const quotes = result.quotes || [];
+
+    if (quotes.length === 0) {
+      showToast('No quotes to generate bibliography');
+      return;
+    }
+
+    // Get user preferences
+    const prefsResult = await chrome.storage.local.get(['userPreferences', 'exportPreferences']);
+    const userPrefs = prefsResult.userPreferences || {};
+    const exportPrefs = prefsResult.exportPreferences || { includeMLA: true, includeAPA: true };
+
+    // Build bibliography content
+    let bibliographyContent = `QUICKCITE - BIBLIOGRAPHY GENERATOR\n`;
+    bibliographyContent += `Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}\n`;
+    bibliographyContent += `Total Sources: ${quotes.length}\n`;
+    bibliographyContent += `${'='.repeat(80)}\n\n`;
+
+    // Sort quotes by author for bibliography
+    const sortedQuotes = [...quotes].sort((a, b) => {
+      const authorA = (a.author || 'Unknown Author').split(' ').pop().toLowerCase();
+      const authorB = (b.author || 'Unknown Author').split(' ').pop().toLowerCase();
+      return authorA.localeCompare(authorB);
+    });
+
+    // MLA Works Cited Section
+    if (exportPrefs.includeMLA) {
+      bibliographyContent += `MLA WORKS CITED\n`;
+      bibliographyContent += `${'='.repeat(80)}\n\n`;
+
+      sortedQuotes.forEach((quote, index) => {
+        const author = quote.author || 'Unknown Author';
+        const title = quote.sourceTitle;
+        const url = quote.sourceUrl;
+        const accessDate = quote.accessDate;
+
+        // MLA format: Author. "Title." Website, Accessed Date. URL.
+        const mlaEntry = `${author}. "${title}." Accessed ${accessDate}. ${url}.\n\n`;
+
+        // Add hanging indent (0.5") using tabs for simplicity
+        // In a real document, this would be formatted with proper paragraph styles
+        bibliographyContent += mlaEntry;
+      });
+
+      bibliographyContent += `\n${'='.repeat(80)}\n\n`;
+    }
+
+    // APA References Section
+    if (exportPrefs.includeAPA) {
+      bibliographyContent += `APA REFERENCES\n`;
+      bibliographyContent += `${'='.repeat(80)}\n\n`;
+
+      sortedQuotes.forEach((quote, index) => {
+        const author = quote.author || 'Unknown Author';
+        const title = quote.sourceTitle;
+        const url = quote.sourceUrl;
+        const year = new Date(quote.timestamp).getFullYear();
+
+        // APA format: Author, A. A. (Year). Title. Website. URL
+        const apaEntry = `${author} (${year}). ${title}. Retrieved ${quote.accessDate}, from ${url}.\n\n`;
+
+        // Add hanging indent
+        bibliographyContent += apaEntry;
+      });
+    }
+
+    // Create and trigger download
+    const blob = new Blob([bibliographyContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `quickcite-bibliography-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast(`Bibliography generated for ${quotes.length} sources`);
+
+  } catch (error) {
+    console.error('Error generating bibliography:', error);
+    showToast('Error generating bibliography');
   }
 }
 
@@ -470,10 +591,11 @@ function generateMlaCitation(quote) {
   const date = quote.accessDate;
   const quoteText = quote.text;
 
-  // MLA 9th edition format with hanging indent (first line flush left, subsequent lines indented 0.5")
-  // Using non-breaking spaces (\u00A0) for proper indentation
-  const hangingIndent = '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0';
-  return `"${quoteText}" ${author}. ${title}. Accessed ${date}. ${url}.`;
+  // MLA 9th edition format (Purdue OWL)
+  // Format: "Quote." Author. Website Title, URL, Accessed Date.
+  // Note: MLA recommends including article titles in quotes for specific articles
+  // and italics for the website/container name
+  return `"${quoteText}" ${author}. "${title}." Accessed ${date}. ${url}.`;
 }
 
 // Generate APA citation format with hanging indent
@@ -484,8 +606,11 @@ function generateApaCitation(quote) {
   const title = quote.sourceTitle;
   const url = quote.sourceUrl;
 
-  // APA 7th edition format - using similar hanging indent approach
-  return `${author} ${date}. ${title}. Retrieved ${quote.accessDate}, from ${url}`;
+  // APA 7th edition format (Purdue OWL)
+  // Format: Author, A. A. (Year). Title of article. Website Title. URL
+  // Note: Article titles are not italicized in APA 7th edition (only journal/book titles)
+  // URLs should end with a period
+  return `${author} ${date}. ${title}. Retrieved ${quote.accessDate}, from ${url}.`;
 }
 
 // Show toast notification
@@ -498,6 +623,30 @@ function showToast(message) {
   setTimeout(() => {
     notificationToast.classList.remove('show');
   }, 3000);
+}
+
+// ============================================================================
+// SIGNAL PHRASE: Copy signal phrase templates
+// ============================================================================
+async function copySignalPhrase(phraseTemplate) {
+  try {
+    // Replace placeholders with actual values
+    const author = currentQuote?.author || 'Unknown Author';
+    const title = currentQuote?.sourceTitle || 'Article Title';
+    const quote = currentQuote?.text || 'direct quote';
+
+    const phraseText = phraseTemplate
+      .replace('${author}', author)
+      .replace('${title}', title)
+      .replace('${quote}', quote);
+
+    await navigator.clipboard.writeText(phraseText);
+    showToast('Signal phrase copied!');
+
+  } catch (error) {
+    console.error('Error copying signal phrase:', error);
+    showToast('Failed to copy signal phrase');
+  }
 }
 
 // ============================================================================
@@ -596,6 +745,31 @@ function switchTab(tabName) {
     settingsTabContent.classList.add('active');
     // Load settings when opening settings tab
     loadSettingsUI();
+  }
+}
+
+// ============================================================================
+// MODAL TAB SWITCHING: Handle tab navigation in quote modal
+// ============================================================================
+function switchModalTab(tabName) {
+  const modalInfoTab = document.getElementById('modalInfoTab');
+  const modalCitationsTab = document.getElementById('modalCitationsTab');
+  const modalInfoContent = document.getElementById('modalInfoContent');
+  const modalCitationsContent = document.getElementById('modalCitationsContent');
+
+  // Remove active class from all tabs and content
+  modalInfoTab.classList.remove('active');
+  modalCitationsTab.classList.remove('active');
+  modalInfoContent.classList.remove('active');
+  modalCitationsContent.classList.remove('active');
+
+  // Add active class to selected tab and content
+  if (tabName === 'info') {
+    modalInfoTab.classList.add('active');
+    modalInfoContent.classList.add('active');
+  } else if (tabName === 'citations') {
+    modalCitationsTab.classList.add('active');
+    modalCitationsContent.classList.add('active');
   }
 }
 

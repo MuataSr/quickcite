@@ -1,4 +1,4 @@
-# Quote Saver & Citation Assistant
+# QuickCite
 
 A Chrome extension that allows users to right-click selected text to save quotes with auto-generated citations, then manage them through a popup interface.
 

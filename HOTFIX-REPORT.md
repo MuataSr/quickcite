@@ -1,6 +1,7 @@
-# Hotfix Report - Priority Testing Issues
+# Hotfix Report - Priority Testing Issues (QuickCite)
 
 ## Date: November 30, 2025
+## Extension Name: QuickCite
 ## Extension Version: 1.0.0
 ## Status: FIXED ✅
 

@@ -1,6 +1,7 @@
-# Quote Saver & Citation Assistant - Integration Testing Protocol
+# QuickCite - Integration Testing Protocol
 
 ## Test Environment
+- **Extension Name:** QuickCite
 - **Extension Version:** 1.0.0
 - **Chrome Version:** Latest (Manifest V3)
 - **Test Date:** _______________

@@ -1,5 +1,5 @@
 # AUTOMATED CODE TEST REPORT
-**Extension:** Quote Saver & Citation Assistant
+**Extension:** QuickCite
 **Date:** November 30, 2025
 **Test Type:** Automated Static Analysis & Code Verification
 

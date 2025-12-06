@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quote Saver & Citation Assistant</title>
+  <title>QuickCite</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
     <!-- Header Section -->
     <header class="header">
       <div class="header-title">
-        <h1>Quote Saver</h1>
+        <h1>QuickCite</h1>
         <span id="quoteCount" class="quote-count">0 quotes</span>
       </div>
       <button id="refreshBtn" class="icon-btn" title="Refresh quotes">
@@ -38,6 +38,10 @@
       <button id="exportBtn" class="btn btn-primary">
         <span class="btn-icon">=�</span>
         Export All
+        <button id="bibliographyBtn" class="btn btn-secondary">
+          <span class="btn-icon">📖</span>
+          Generate Bibliography
+        </button>
       </button>
       <button id="clearAllBtn" class="btn btn-danger">
         <span class="btn-icon">=�</span>
@@ -123,39 +127,82 @@
         <h2>Quote Details</h2>
         <button id="closeModal" class="icon-btn close-btn" title="Close"></button>
       </div>
+      <!-- Modal Tabs -->
+      <div class="modal-tabs">
+        <button id="modalInfoTab" class="modal-tab-btn active" data-tab="info">
+          <span class="tab-icon">📄</span>
+          Quote Info
+        </button>
+        <button id="modalCitationsTab" class="modal-tab-btn" data-tab="citations">
+          <span class="tab-icon">📚</span>
+          Citations
+        </button>
+      </div>
+
       <div class="modal-body">
-        <div class="quote-text-container">
-          <p id="modalQuoteText" class="quote-text"></p>
+        <!-- Tab Content: Quote Info -->
+        <div id="modalInfoContent" class="modal-tab-content active">
+          <div class="quote-text-container">
+            <p id="modalQuoteText" class="quote-text"></p>
+          </div>
+          <div class="quote-metadata">
+            <div class="metadata-item">
+              <strong>Source:</strong>
+              <a id="modalSourceTitle" href="#" target="_blank"></a>
+            </div>
+            <div class="metadata-item">
+              <strong>Author:</strong>
+              <span id="modalAuthor"></span>
+            </div>
+            <div class="metadata-item">
+              <strong>URL:</strong>
+              <a id="modalSourceUrl" href="#" target="_blank"></a>
+            </div>
+            <div class="metadata-item">
+              <strong>Saved:</strong>
+              <span id="modalAccessDate"></span>
+            </div>
+            <div class="metadata-item">
+              <strong>Timestamp:</strong>
+              <span id="modalTimestamp"></span>
+            </div>
+          </div>
         </div>
-        <div class="quote-metadata">
-          <div class="metadata-item">
-            <strong>Source:</strong>
-            <a id="modalSourceTitle" href="#" target="_blank"></a>
+
+        <!-- Tab Content: Citations -->
+        <div id="modalCitationsContent" class="modal-tab-content">
+          <div class="citation-section">
+            <div class="citation-block">
+              <label>MLA Format:</label>
+              <div class="citation-text" id="modalMlaCitation"></div>
+              <button class="copy-btn" data-citation="mla">Copy</button>
+            </div>
+            <div class="citation-block">
+              <label>APA Format:</label>
+              <div class="citation-text" id="modalApaCitation"></div>
+              <button class="copy-btn" data-citation="apa">Copy</button>
+            </div>
           </div>
-          <div class="metadata-item">
-            <strong>URL:</strong>
-            <a id="modalSourceUrl" href="#" target="_blank"></a>
-          </div>
-          <div class="metadata-item">
-            <strong>Saved:</strong>
-            <span id="modalAccessDate"></span>
-          </div>
-          <div class="metadata-item">
-            <strong>Timestamp:</strong>
-            <span id="modalTimestamp"></span>
-          </div>
-        </div>
-        <div class="citation-section">
-          <h3>Citation Formats</h3>
-          <div class="citation-block">
-            <label>MLA Format:</label>
-            <div class="citation-text" id="modalMlaCitation"></div>
-            <button class="copy-btn" data-citation="mla">Copy</button>
-          </div>
-          <div class="citation-block">
-            <label>APA Format:</label>
-            <div class="citation-text" id="modalApaCitation"></div>
-            <button class="copy-btn" data-citation="apa">Copy</button>
+
+          <!-- Signal Phrases Section -->
+          <div class="signal-phrases-section">
+            <h3>Signal Phrases for Quote Integration</h3>
+            <p class="section-description">Choose a template to introduce your quote:</p>
+
+            <div class="signal-phrase-list">
+              <div class="signal-phrase-item">
+                <div class="phrase-text">According to [Author], "[direct quote]."</div>
+                <button class="copy-phrase-btn" data-phrase="According to ${author}, &quot;${quote}&quot;.">Copy</button>
+              </div>
+              <div class="signal-phrase-item">
+                <div class="phrase-text">As [Author] states, "[direct quote]."</div>
+                <button class="copy-phrase-btn" data-phrase="As ${author} states, &quot;${quote}&quot;.">Copy</button>
+              </div>
+              <div class="signal-phrase-item">
+                <div class="phrase-text">In "[Article Title]," [Author] notes, "[direct quote]."</div>
+                <button class="copy-phrase-btn" data-phrase="In &quot;${title},&quot; ${author} notes, &quot;${quote}&quot;.">Copy</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

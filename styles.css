@@ -480,8 +480,58 @@ body {
   color: #333;
 }
 
-.modal-body {
+/* ============================================================================
+   MODAL TABS
+   ============================================================================ */
+.modal-tabs {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f9f9f9;
+}
+
+.modal-tab-btn {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.modal-tab-btn:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.modal-tab-btn.active {
+  color: #667eea;
+  border-bottom: 2px solid #667eea;
+  background: white;
+}
+
+.modal-tab-btn .tab-icon {
+  font-size: 16px;
+}
+
+.modal-tab-content {
+  display: none;
   padding: 20px;
+}
+
+.modal-tab-content.active {
+  display: block;
+}
+
+.modal-body {
+  padding: 0;
 }
 
 .quote-text-container {
@@ -576,6 +626,65 @@ body {
   background: #5568d3;
 }
 
+/* Signal Phrases Section */
+.signal-phrases-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.signal-phrases-section h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.signal-phrases-section .section-description {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.signal-phrase-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.signal-phrase-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  gap: 12px;
+}
+
+.signal-phrase-item .phrase-text {
+  flex: 1;
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.copy-phrase-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.copy-phrase-btn:hover {
+  background: #5568d3;
+}
+
 .modal-footer {
   display: flex;
   gap: 10px;
@@ -604,6 +713,41 @@ body {
 
 .toast.show {
   transform: translateX(-50%) translateY(0);
+}
+
+/* Custom Success Toast - Green with Checkmark */
+.custom-success-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #10b981;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transform: translateX(400px);
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 10000;
+}
+
+.custom-success-toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.custom-success-toast .success-icon {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.custom-success-toast .success-message {
+  white-space: nowrap;
 }
 
 /* ============================================================================

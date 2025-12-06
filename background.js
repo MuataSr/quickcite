@@ -1,23 +1,90 @@
-// Quote Saver & Citation Assistant - Service Worker (Manifest V3)
+// QuickCite - Service Worker (Manifest V3)
 // This file handles context menu creation and quote capture functionality
 
 // ============================================================================
-// INITIALIZATION: Create context menu on extension installation
+// CONTEXT MENU: Create and manage context menu
 // ============================================================================
-chrome.runtime.onInstalled.addListener(() => {
-  // Create the right-click context menu item for quote saving
-  chrome.contextMenus.create({
-    id: 'saveQuote',
-    title: 'Save Quote & Generate Citation',
-    contexts: ['selection'] // Only show for selected text
-  });
 
-  console.log('Quote Saver: Context menu initialized');
+function createContextMenu() {
+  try {
+    // Remove existing menu
+    chrome.contextMenus.removeAll();
+
+    // Create new menu
+    chrome.contextMenus.create({
+      id: 'saveQuote',
+      title: 'Save Quote & Generate Citation',
+      contexts: ['selection']
+    });
+
+    console.log('✅ Context menu created');
+  } catch (error) {
+    console.error('❌ Failed to create context menu:', error);
+  }
+}
+
+// Create on install
+chrome.runtime.onInstalled.addListener(() => {
+  console.log('📦 Extension installed');
+  createContextMenu();
 });
+
+// Also create when service worker starts
+createContextMenu();
 
 // ============================================================================
 // QUOTE CAPTURE HANDLER: Process context menu clicks
 // ============================================================================
+// ============================================================================
+// TOAST CREATION: Function to inject toast into webpage
+// ============================================================================
+function createToast(message) {
+  const toast = document.createElement('div');
+  toast.innerHTML = `
+    <span style="font-size: 18px; font-weight: bold;">✓</span>
+    <span style="white-space: nowrap;">${message}</span>
+  `;
+  toast.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #10b981;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateX(400px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 2147483647;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  `;
+
+  document.body.appendChild(toast);
+
+  // Animate in
+  setTimeout(() => {
+    toast.style.transform = 'translateX(0)';
+    toast.style.opacity = '1';
+  }, 10);
+
+  // Auto-remove
+  setTimeout(() => {
+    toast.style.transform = 'translateX(400px)';
+    toast.style.opacity = '0';
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    }, 300);
+  }, 2500);
+}
+
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   // Verify the correct menu item was clicked
   if (info.menuItemId === 'saveQuote') {
@@ -30,7 +97,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         throw new Error('No text selected');
       }
 
-      // Extract author from page title or meta tags
+      // Extract author from page title and URL
       const author = await extractAuthor(tab.url, tab.title);
 
       // Create quote object with the specified schema
@@ -56,8 +123,20 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         // Popup might not be open, ignore error
       });
 
-      // Provide user feedback via notification
-      await showNotification(quote);
+      // Show custom toast directly on the webpage (works even when popup is closed)
+      const toastMessage = 'Source Saved';
+      console.log('Showing toast:', toastMessage);
+
+      try {
+        chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          function: createToast,
+          args: [toastMessage]
+        });
+        console.log('Toast injected successfully');
+      } catch (error) {
+        console.error('Failed to inject toast:', error);
+      }
 
       console.log('Quote saved:', quote.id);
 
@@ -67,7 +146,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       chrome.notifications.create({
         type: 'basic',
         iconUrl: 'icons/icon48.png',
-        title: 'Quote Saver',
+        title: 'QuickCite',
         message: 'Error saving quote. Please try again.'
       });
     }
@@ -102,23 +181,6 @@ async function saveQuoteToStorage(quote) {
 // ============================================================================
 // USER FEEDBACK: Show Chrome notification
 // ============================================================================
-async function showNotification(quote) {
-  // Truncate source title for notification display (max 50 chars)
-  const truncatedTitle = quote.sourceTitle.length > 50
-    ? quote.sourceTitle.substring(0, 47) + '...'
-    : quote.sourceTitle;
-
-  // Create notification with saved quote information
-  chrome.notifications.create({
-    type: 'basic',
-    iconUrl: 'icons/icon48.png',
-    title: 'Quote Saved',
-    message: `Quote saved from "${truncatedTitle}"`
-  });
-
-  console.log(`Notification: Quote from "${truncatedTitle}" saved successfully`);
-}
-
 // ============================================================================
 // MESSAGE HANDLER: Handle requests from popup
 // ============================================================================
@@ -193,7 +255,6 @@ async function extractAuthor(url, title) {
     }
 
     // If no author found in title, try to extract from URL (for some sites)
-    // This is a best-effort approach
     const urlPatterns = [
       /\/author\/([^\/\?#]+)/i,
       /\/by\/([^\/\?#]+)/i,

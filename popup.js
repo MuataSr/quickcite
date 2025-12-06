@@ -66,6 +66,11 @@ const SAMPLE_QUOTES = [
 // INITIALIZATION: Load quotes when popup opens
 // ============================================================================
 document.addEventListener('DOMContentLoaded', async () => {
+  // Initialize Lucide icons
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+  }
+
   await loadQuotes();
   setupEventListeners();
 });
@@ -226,10 +231,10 @@ function createQuoteItem(quote) {
     </div>
     <div class="quote-actions">
       <button class="action-btn view-btn" title="View Details" data-quote-id="${quote.id}">
-        ℹ️
+        <i data-lucide="eye"></i>
       </button>
       <button class="action-btn delete-btn" title="Delete" data-quote-id="${quote.id}">
-        ✖
+        <i data-lucide="trash-2"></i>
       </button>
     </div>
   `;
@@ -240,6 +245,11 @@ function createQuoteItem(quote) {
 
   viewBtn.addEventListener('click', () => showQuoteDetails(quote));
   deleteBtn.addEventListener('click', () => deleteQuote(quote.id));
+
+  // Initialize Lucide icons for dynamically created elements
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+  }
 
   return item;
 }

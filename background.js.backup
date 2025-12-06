@@ -35,58 +35,6 @@ createContextMenu();
 // ============================================================================
 // QUOTE CAPTURE HANDLER: Process context menu clicks
 // ============================================================================
-// ============================================================================
-// TOAST CREATION: Function to inject toast into webpage
-// ============================================================================
-function createToast(message) {
-  const toast = document.createElement('div');
-  toast.innerHTML = `
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-      <polyline points="20 6 9 17 4 12"></polyline>
-    </svg>
-    <span style="white-space: nowrap;">${message}</span>
-  `;
-  toast.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #10b981;
-    color: white;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transform: translateX(400px);
-    opacity: 0;
-    transition: all 0.3s ease;
-    z-index: 2147483647;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  `;
-
-  document.body.appendChild(toast);
-
-  // Animate in
-  setTimeout(() => {
-    toast.style.transform = 'translateX(0)';
-    toast.style.opacity = '1';
-  }, 10);
-
-  // Auto-remove
-  setTimeout(() => {
-    toast.style.transform = 'translateX(400px)';
-    toast.style.opacity = '0';
-    setTimeout(() => {
-      if (toast.parentNode) {
-        toast.parentNode.removeChild(toast);
-      }
-    }, 300);
-  }, 2500);
-}
-
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   // Verify the correct menu item was clicked
   if (info.menuItemId === 'saveQuote') {
@@ -126,13 +74,59 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       });
 
       // Show custom toast directly on the webpage (works even when popup is closed)
-      const toastMessage = 'Source Saved';
+      const toastMessage = `Quote saved from "${quote.sourceTitle}"`;
       console.log('Showing toast:', toastMessage);
 
       try {
         chrome.scripting.executeScript({
           target: { tabId: tab.id },
-          function: createToast,
+          function: (message) {
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.innerHTML = `
+              <span style="font-size: 18px; font-weight: bold;">✓</span>
+              <span style="white-space: nowrap;">${message}</span>
+            `;
+            toast.style.cssText = `
+              position: fixed;
+              top: 20px;
+              right: 20px;
+              background: #10b981;
+              color: white;
+              padding: 10px 16px;
+              border-radius: 8px;
+              font-size: 14px;
+              font-weight: 500;
+              box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              transform: translateX(400px);
+              opacity: 0;
+              transition: all 0.3s ease;
+              z-index: 2147483647;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            `;
+
+            document.body.appendChild(toast);
+
+            // Animate in
+            setTimeout(() => {
+              toast.style.transform = 'translateX(0)';
+              toast.style.opacity = '1';
+            }, 10);
+
+            // Auto-remove
+            setTimeout(() => {
+              toast.style.transform = 'translateX(400px)';
+              toast.style.opacity = '0';
+              setTimeout(() => {
+                if (toast.parentNode) {
+                  toast.parentNode.removeChild(toast);
+                }
+              }, 300);
+            }, 2500);
+          },
           args: [toastMessage]
         });
         console.log('Toast injected successfully');

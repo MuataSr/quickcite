@@ -43,6 +43,37 @@
 
     <!-- Tab Content: Quotes -->
     <div id="quotesTabContent" class="tab-content active">
+      <!-- Search and Filter Section -->
+      <div class="search-filter-section">
+        <div class="search-bar">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+          <input type="text" id="searchInput" placeholder="Search quotes, authors, sources..." class="search-input">
+          <button id="clearSearchBtn" class="clear-search-btn" title="Clear search" style="display: none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6 6 18M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="filter-row">
+          <select id="sourceFilter" class="filter-select">
+            <option value="all">All Sources</option>
+            <option value="academic">Academic</option>
+            <option value="news">News</option>
+            <option value="video">Video</option>
+            <option value="government">Government</option>
+            <option value="reference">Reference</option>
+            <option value="general">Website</option>
+          </select>
+          <select id="tagFilter" class="filter-select">
+            <option value="all">All Tags</option>
+          </select>
+          <span id="filterStatus" class="filter-status"></span>
+        </div>
+      </div>
+
       <!-- Controls Section -->
     <div class="controls">
       <button id="exportBtn" class="btn btn-primary">
@@ -189,6 +220,52 @@
               <strong>Timestamp:</strong>
               <span id="modalTimestamp"></span>
             </div>
+            <div class="metadata-item" id="modalCreationDateContainer" style="display: none;">
+              <strong>Created On:</strong>
+              <span id="modalCreationDate"></span>
+            </div>
+          </div>
+
+          <!-- Source Verification Section -->
+          <div class="source-verification-section" id="sourceVerificationSection" style="display: none;">
+            <h4>Source Verification</h4>
+            <div class="verification-badge" id="verificationBadge">
+              <span class="reliability-indicator" id="reliabilityIndicator"></span>
+              <span class="reliability-label" id="reliabilityLabel"></span>
+            </div>
+            <div class="verification-details">
+              <div class="verification-item" id="sourceCategoryContainer">
+                <strong>Category:</strong>
+                <span id="sourceCategory"></span>
+              </div>
+              <div class="verification-item" id="contentTypeContainer" style="display: none;">
+                <strong>Content Type:</strong>
+                <span id="contentType"></span>
+              </div>
+              <div class="verification-item" id="sourceDescriptionContainer" style="display: none;">
+                <strong>Description:</strong>
+                <span id="sourceDescription"></span>
+              </div>
+            </div>
+            <div class="source-warnings" id="sourceWarningsContainer" style="display: none;">
+              <div class="warnings-header">⚠️ Warnings</div>
+              <ul id="sourceWarningsList"></ul>
+            </div>
+          </div>
+
+          <!-- Tags Section -->
+          <div class="tags-section">
+            <h4>Tags</h4>
+            <div class="tags-container" id="quoteTags">
+              <!-- Tags will be populated dynamically -->
+            </div>
+            <div class="tag-input-row">
+              <input type="text" id="tagInput" class="tag-input" placeholder="Add a tag..." maxlength="30">
+              <button id="addTagBtn" class="btn-add-tag">Add</button>
+            </div>
+            <div id="tagSuggestions" class="tag-suggestions" style="display: none;">
+              <!-- Auto-suggestions will appear here -->
+            </div>
           </div>
 
           <!-- Signal Phrases Section -->
@@ -226,6 +303,34 @@
               <div class="citation-text" id="modalApaCitation"></div>
               <button class="copy-btn" data-citation="apa">Copy</button>
             </div>
+            <div class="citation-block">
+              <h3>Bibliography (Chicago)</h3>
+              <div class="citation-text" id="modalChicagoCitation"></div>
+              <button class="copy-btn" data-citation="chicago">Copy</button>
+            </div>
+          </div>
+
+          <!-- In-Text Citations Section -->
+          <div class="in-text-citations-section">
+            <h3>In-Text Citations</h3>
+            <p class="section-description">Quick copy for parenthetical citations:</p>
+            <div class="in-text-buttons">
+              <div class="in-text-item">
+                <span class="in-text-label">MLA:</span>
+                <span class="in-text-preview" id="mlaInTextPreview"></span>
+                <button class="copy-btn-small" data-intext="mla">Copy</button>
+              </div>
+              <div class="in-text-item">
+                <span class="in-text-label">APA:</span>
+                <span class="in-text-preview" id="apaInTextPreview"></span>
+                <button class="copy-btn-small" data-intext="apa">Copy</button>
+              </div>
+              <div class="in-text-item">
+                <span class="in-text-label">Chicago:</span>
+                <span class="in-text-preview" id="chicagoInTextPreview"></span>
+                <button class="copy-btn-small" data-intext="chicago">Copy</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -239,11 +344,42 @@
     </div>
   </div>
 
+  <!-- Bibliography Preview Modal -->
+  <div id="bibliographyPreviewModal" class="modal">
+    <div class="modal-content bibliography-preview-content">
+      <div class="modal-header">
+        <h2>Bibliography Preview</h2>
+        <button id="closeBibliographyPreview" class="icon-btn close-btn" title="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="preview-info">
+          <p class="preview-description">Review your bibliography before downloading. This preview shows exactly what will be included in your exported file.</p>
+        </div>
+        <div class="bibliography-preview-container">
+          <pre id="bibliographyPreviewText" class="bibliography-preview-text"></pre>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="downloadBibliographyBtn" class="btn btn-primary">
+          <span class="btn-icon">📥</span>
+          Download PDF
+        </button>
+        <button id="closePreviewBtn" class="btn btn-secondary">Close Preview</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Notification Toast -->
   <div id="notificationToast" class="toast">
     <span id="toastMessage"></span>
   </div>
 
+  <script src="ai-model-manager.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

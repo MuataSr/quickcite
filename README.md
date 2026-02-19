@@ -1,123 +1,207 @@
 # QuickCite
 
-A Chrome extension that allows users to right-click selected text to save quotes with auto-generated citations, then manage them through a popup interface.
+**Stop wasting time formatting citations.**
 
-## Features
+QuickCite is a free, open-source Chrome extension that helps students, researchers, and writers save quotes from the web with perfectly formatted citations—instantly.
 
-### 📝 Quote Capture
-- **Right-click Quote Saving**: Select text on any webpage, right-click, and save with automatic citation generation
-- **Context Menu**: Easy access via "Save Quote & Generate Citation" option
-- **Automatic Metadata**: Captures page URL, title, date, and timestamp
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+[![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue.svg)](https://chrome.google.com/webstore)
+[![Version](https://img.shields.io/badge/version-1.0.0-orange.svg)](https://github.com/MuataSr/quickcite)
 
-### 📖 Quote Management
-- **Popup Interface**: Clean, modern UI to view all saved quotes
-- **Quote Details**: Click any quote to view full details with metadata
-- **Real-time Count**: See total number of quotes at a glance
-- **Search & Browse**: Organized list view with source information
+---
 
-### 📚 Citation Generation
-- **MLA Format**: Auto-generated MLA citations with proper formatting
-- **APA Format**: Auto-generated APA citations with proper formatting
-- **One-Click Copy**: Copy citations to clipboard for papers and documents
-- **Complete Metadata**: Includes source, URL, and access date
+## ✨ Features
 
-### 💾 Export & Organization
-- **Export JSON**: Download all quotes as structured JSON file
-- **Delete Options**: Remove individual quotes or clear all at once
-- **Local Storage**: All data stored locally using chrome.storage.local for privacy
-- **Auto-Refresh**: Popup automatically updates when new quotes are saved
+### Three Citation Styles, One Click
+- **MLA 9th Edition** — Title case, proper punctuation
+- **APA 7th Edition** — Sentence case, DOI support
+- **Chicago Notes-Bibliography** — Academic standard
 
-### 🎨 User Experience
-- **Modern UI**: Clean, professional design with smooth animations
-- **Toast Notifications**: User-friendly feedback for all actions
-- **Responsive Layout**: Optimized for Chrome extension popup (400px wide)
-- **Empty State**: Helpful guidance when no quotes are saved
+### Smart Metadata Extraction
+- Automatically captures author, title, publication date, URL
+- Recognizes academic papers, news articles, videos, blogs
+- Special **arXiv integration** — pulls paper metadata automatically
+- **YouTube/Vimeo** metadata extraction (channel, upload date)
 
-## Screenshots
+### Source Intelligence
+- Reliability classification (academic, government, news, etc.)
+- Content warnings for questionable sources
+- DOI and publisher detection
 
-*Screenshots will be added here*
+### Beautiful & Customizable
+- **13 stunning themes** (Typewriter, Neon, Minimal, and more)
+- Clean, distraction-free interface
+- Dark mode options
+- Search and organize with tags
 
-1. **Context Menu**: Right-click on selected text shows "Save Quote & Generate Citation" option
-2. **Popup Interface**: Clean list view of all saved quotes with metadata
-3. **Quote Detail**: Individual quote view with full citation information
+### Export Anywhere
+- One-click export to JSON
+- Bibliography preview
+- Copy individual citations or export all
 
-## Installation
+### 100% Private
+- All data stays on **YOUR device**
+- No cloud, no account, no tracking
+- No data leaves your browser
+- Open source—verify it yourself
 
-This is a Manifest V3 Chrome extension. To install:
+---
 
+## 🚀 Installation
+
+### From Chrome Web Store (Recommended)
+*Coming soon!*
+
+### From Source (Developer Mode)
 1. Clone this repository
-2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer mode" in the top right
-4. Click "Load unpacked" and select the `quote-saver-citation-assistant` directory
-5. The extension should now appear in your Chrome toolbar
+   ```bash
+   git clone https://github.com/MuataSr/quickcite.git
+   ```
+2. Open Chrome and go to `chrome://extensions/`
+3. Enable **Developer mode** (toggle in top right)
+4. Click **Load unpacked**
+5. Select the `quickcite` folder
+6. Pin QuickCite to your toolbar for easy access
 
-## Usage
+---
 
-### Step 1: Save Quotes
-1. **Select text** on any webpage
-2. **Right-click** on the selected text
-3. Choose **"Save Quote & Generate Citation"** from the context menu
-4. ✅ Chrome notification confirms: "Quote saved from [page title]"
+## 📖 How to Use
 
-### Step 2: View & Manage Quotes
-1. Click the **QS icon** in your Chrome toolbar
-2. View all saved quotes in the popup interface
-3. Each quote shows:
-   - Preview of the quote text
-   - Source page title
-   - Website URL
-   - Date saved
+### Save a Quote (3 seconds)
+1. **Select** any text on any webpage
+2. **Right-click** → "Save Quote & Generate Citation"
+3. **Done** — your quote is saved with a perfect citation
 
-### Step 3: Quote Details & Citations
-1. Click the **eye icon (👁️)** on any quote
-2. View full details in the modal:
-   - Complete quote text
-   - Source information
-   - Timestamp
-3. **Copy Citations**:
-   - Click **"Copy"** for MLA format
-   - Click **"Copy"** for APA format
-4. **Delete** if needed with the delete button
+### View & Copy Citations
+1. Click the **QuickCite icon** in your toolbar
+2. Click the **eye icon** on any quote
+3. View full details with MLA, APA, and Chicago citations
+4. Click **Copy** to grab any citation format
 
-### Step 4: Export or Clear
-- **Export All**: Click "Export All" to download JSON file with all quotes
-- **Clear All**: Click "Clear All" to delete all quotes (with confirmation)
-- **Refresh**: Click refresh button (↻) to reload quotes
+### Organize with Tags
+- Add tags to categorize quotes by topic, project, or source
+- Filter quotes by tag for quick access
+- Search across all your saved quotes
 
-### Additional Features
-- **Real-time Updates**: Popup automatically refreshes when you save quotes
-- **Sort Order**: Quotes sorted by newest first
-- **Toast Notifications**: Get feedback for all actions (copy, delete, export)
-- **Confirmation Dialogs**: Prevent accidental deletions
+### Export Your Research
+- Click **Export All** to download a JSON file
+- Perfect for backup or importing into other tools
+- Bibliography preview for easy reference
 
-## File Structure
+---
+
+## 📸 Screenshots
+
+| Empty State | Quote List | Citation Details |
+|:-----------:|:----------:|:----------------:|
+| ![Empty State](store/screenshots/quickcitescreenshot1.png) | ![Quote List](store/screenshots/quickcitescreenshot2.png) | ![Citation Details](store/screenshots/quickcitescreenshot3.png) |
+
+---
+
+## 🎯 Perfect For
+
+| User | Use Case |
+|------|----------|
+| 🎓 Students | Research papers, essays, theses |
+| 🔬 Academics | Literature reviews, citations |
+| 📰 Journalists | Source tracking, quote verification |
+| ✍️ Content Creators | Reference gathering, attribution |
+| 📚 Everyone | Saving interesting quotes from the web |
+
+---
+
+## 🌐 Works Everywhere
+
+- **News sites** — BBC, CNN, Reuters, NYT, and more
+- **Academic sources** — arXiv, Google Scholar, JSTOR, university sites
+- **Video platforms** — YouTube, Vimeo, TED
+- **Blogs & magazines** — Medium, Substack, WordPress
+- **Government & institutional sites**
+- **Any public webpage**
+
+---
+
+## 🔒 Privacy First
+
+| ✅ What QuickCite Does | ❌ What QuickCite Doesn't Do |
+|------------------------|------------------------------|
+| Stores data locally on your device | Collect personal information |
+| Work offline after installation | Send data to external servers |
+| Open source for full transparency | Track your browsing |
+| Respect your privacy completely | Require an account |
+
+See [PRIVACY.md](PRIVACY.md) for full details.
+
+---
+
+## 📁 Project Structure
 
 ```
-quote-saver-citation-assistant/
-├── manifest.json          # Extension manifest (Manifest V3)
-├── background.js          # Background service worker
-├── popup.html             # Extension popup UI
-├── popup.js               # Popup functionality
-├── styles.css             # Popup styling
-└── icons/
-    └── icon48.png         # Extension icon (48x48px)
+quickcite/
+├── manifest.json       # Chrome extension manifest (MV3)
+├── background.js       # Service worker for context menu
+├── popup.html          # Extension popup UI
+├── popup.js            # Popup functionality
+├── styles.css          # Main stylesheet
+├── themes/             # 13 theme variations
+│   ├── typewriter.css  # Default theme
+│   ├── neon.css        # Dark high-contrast
+│   └── ...
+├── icons/              # Extension icons
+├── store/              # Chrome Web Store assets
+│   └── screenshots/    # Store screenshots
+├── docs/internal/      # Internal documentation
+├── model/              # AI citation classification
+├── LICENSE             # MIT License
+├── PRIVACY.md          # Privacy policy
+└── AGENTS.md           # Guidelines for AI contributors
 ```
 
-## Permissions
+---
 
-- `storage`: For saving quotes locally
-- `activeTab`: For accessing selected text and page metadata
-- `contextMenus`: For right-click context menu integration
-- `notifications`: For user feedback when quotes are saved
+## 🤝 Contributing
 
-## License
+Contributions are welcome! Here's how to help:
 
-MIT License - feel free to use, modify, and distribute as needed.
+1. **Report bugs** — Open an issue with details
+2. **Suggest features** — Share your ideas in issues
+3. **Submit pull requests** — Fix bugs or add features
+4. **Improve documentation** — Help others understand the project
 
-## Contributing
+Please read the code style guidelines in [AGENTS.md](AGENTS.md).
 
-Open to contributions! Please feel free to submit pull requests or open issues for bugs and feature requests.
+---
 
-## Author
+## 📄 License
 
-Open Source Project
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+**Free to use, modify, and distribute.**
+
+---
+
+## 🙏 Acknowledgments
+
+- Citation formats follow [Purdue OWL](https://owl.purdue.edu/) standards
+- Icons designed with clarity and accessibility in mind
+- Built with modern Chrome Extension APIs (Manifest V3)
+
+---
+
+## 📬 Support
+
+- **Bug reports:** [GitHub Issues](https://github.com/MuataSr/quickcite/issues)
+- **Feature requests:** [GitHub Issues](https://github.com/MuataSr/quickcite/issues)
+- **General questions:** Open a discussion on GitHub
+
+---
+
+<p align="center">
+  <strong>Made with ❤️ for students, researchers, and writers everywhere.</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/MuataSr/quickcite">⭐ Star this repo</a> •
+  <a href="https://github.com/MuataSr/quickcite/issues">Report a bug</a> •
+  <a href="https://github.com/MuataSr/quickcite/blob/main/CONTRIBUTING.md">Contribute</a>
+</p>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickCite Popup Test</title>
+  <style>
+    body { font-family: monospace; padding: 20px; }
+    #console { background: #000; color: #0f0; padding: 20px; min-height: 400px; }
+  </style>
+</head>
+<body>
+  <h1>QuickCite Test</h1>
+  <div id="console">Loading...</div>
+
+  <div id="quoteList"></div>
+  <div id="emptyState"></div>
+  <div id="quoteCount"></div>
+  <div id="refreshBtn"></div>
+  <div id="exportBtn"></div>
+  <div id="clearAllBtn"></div>
+  <div id="quoteModal"></div>
+  <div id="closeModal"></div>
+  <div id="closeModalBtn"></div>
+  <div id="deleteQuoteBtn"></div>
+  <div id="notificationToast"></div>
+
+  <div id="modalQuoteText"></div>
+  <div id="modalSourceTitle"></div>
+  <div id="modalSourceUrl"></div>
+  <div id="modalAccessDate"></div>
+  <div id="modalTimestamp"></div>
+  <div id="modalCreationDate"></div>
+  <div id="modalCreationDateContainer"></div>
+  <div id="modalMlaCitation"></div>
+  <div id="modalApaCitation"></div>
+
+  <div id="bibliographyPreviewModal"></div>
+  <div id="closeBibliographyPreview"></div>
+  <div id="closePreviewBtn"></div>
+  <div id="downloadBibliographyBtn"></div>
+  <div id="bibliographyPreviewText"></div>
+
+  <script>
+    console.log('=== TEST: Popup HTML loaded ===');
+    console.log('document.readyState:', document.readyState);
+  </script>
+  <script>
+    // Override console to display on page
+    const consoleDiv = document.getElementById('console');
+    const originalLog = console.log;
+    const originalError = console.error;
+    console.log = function(...args) {
+      originalLog.apply(console, args);
+      consoleDiv.innerHTML += '<div>' + args.join(' ') + '</div>';
+    };
+    console.error = function(...args) {
+      originalError.apply(console, args);
+      consoleDiv.innerHTML += '<div style="color: red;">ERROR: ' + args.join(' ') + '</div>';
+    };
+  </script>
+  <script src="ai-model-manager.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

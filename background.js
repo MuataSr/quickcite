@@ -625,6 +625,9 @@ function calculateSimilarity(text1, text2) {
   const intersection = new Set([...words1].filter(x => words2.has(x)));
   const union = new Set([...words1, ...words2]);
 
+  // Prevent division by zero
+  if (union.size === 0) return 0;
+
   return intersection.size / union.size;
 }
 

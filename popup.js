@@ -126,6 +126,12 @@ const SAMPLE_QUOTES = [
 // EVENT LISTENERS SETUP
 // ============================================================================
 function setupEventListeners() {
+  // Verify DOM elements exist before adding listeners
+  if (!refreshBtn || !exportBtn || !clearAllBtn) {
+    console.error('[Popup] Critical DOM elements not found');
+    return;
+  }
+
   // Refresh button
   refreshBtn.addEventListener('click', loadQuotes);
 
@@ -142,28 +148,32 @@ function setupEventListeners() {
   clearAllBtn.addEventListener('click', clearAllQuotes);
 
   // Modal controls
-  closeModal.addEventListener('click', closeQuoteModal);
-  closeModalBtn.addEventListener('click', closeQuoteModal);
-  deleteQuoteBtn.addEventListener('click', deleteCurrentQuote);
+  if (closeModal) closeModal.addEventListener('click', closeQuoteModal);
+  if (closeModalBtn) closeModalBtn.addEventListener('click', closeQuoteModal);
+  if (deleteQuoteBtn) deleteQuoteBtn.addEventListener('click', deleteCurrentQuote);
 
   // Click outside modal to close
-  quoteModal.addEventListener('click', (e) => {
-    if (e.target === quoteModal) {
-      closeQuoteModal();
-    }
-  });
+  if (quoteModal) {
+    quoteModal.addEventListener('click', (e) => {
+      if (e.target === quoteModal) {
+        closeQuoteModal();
+      }
+    });
+  }
 
   // Bibliography preview modal controls
-  closeBibliographyPreview.addEventListener('click', closeBibliographyPreviewModal);
-  closePreviewBtn.addEventListener('click', closeBibliographyPreviewModal);
-  downloadBibliographyBtn.addEventListener('click', downloadBibliographyFromPreview);
+  if (closeBibliographyPreview) closeBibliographyPreview.addEventListener('click', closeBibliographyPreviewModal);
+  if (closePreviewBtn) closePreviewBtn.addEventListener('click', closeBibliographyPreviewModal);
+  if (downloadBibliographyBtn) downloadBibliographyBtn.addEventListener('click', downloadBibliographyFromPreview);
 
   // Click outside bibliography preview modal to close
-  bibliographyPreviewModal.addEventListener('click', (e) => {
-    if (e.target === bibliographyPreviewModal) {
-      closeBibliographyPreviewModal();
-    }
-  });
+  if (bibliographyPreviewModal) {
+    bibliographyPreviewModal.addEventListener('click', (e) => {
+      if (e.target === bibliographyPreviewModal) {
+        closeBibliographyPreviewModal();
+      }
+    });
+  }
 
   // Tab switching
   const quotesTab = document.getElementById('quotesTab');
@@ -188,9 +198,26 @@ function setupEventListeners() {
   // Settings controls
   const saveSettingsBtn = document.getElementById('saveSettingsBtn');
   const resetSettingsBtn = document.getElementById('resetSettingsBtn');
+  const themeSelect = document.getElementById('themeSelect');
 
   saveSettingsBtn.addEventListener('click', saveSettings);
   resetSettingsBtn.addEventListener('click', resetSettings);
+
+  // Theme switcher (temporary)
+  if (themeSelect) {
+    // Load saved theme
+    const savedTheme = localStorage.getItem('quickcite_theme') || 'typewriter';
+    themeSelect.value = savedTheme;
+    applyTheme(savedTheme);
+
+    // Theme change handler
+    themeSelect.addEventListener('change', (e) => {
+      const theme = e.target.value;
+      localStorage.setItem('quickcite_theme', theme);
+      applyTheme(theme);
+      showToast(`${theme.charAt(0).toUpperCase() + theme.slice(1)} theme applied!`);
+    });
+  }
 
   // Copy citation buttons
   document.querySelectorAll('.copy-btn').forEach(btn => {
@@ -221,24 +248,30 @@ function setupEventListeners() {
   const clearSearchBtn = document.getElementById('clearSearchBtn');
   let searchTimeout;
 
-  searchInput.addEventListener('input', (e) => {
-    clearTimeout(searchTimeout);
-    const searchTerm = e.target.value.trim();
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      const searchTerm = e.target.value.trim();
 
-    // Show/hide clear button
-    clearSearchBtn.style.display = searchTerm ? 'flex' : 'none';
+      // Show/hide clear button
+      if (clearSearchBtn) {
+        clearSearchBtn.style.display = searchTerm ? 'flex' : 'none';
+      }
 
-    // Debounce search (300ms delay)
-    searchTimeout = setTimeout(() => {
+      // Debounce search (300ms delay)
+      searchTimeout = setTimeout(() => {
+        loadQuotes();
+      }, 300);
+    });
+  }
+
+  if (clearSearchBtn) {
+    clearSearchBtn.addEventListener('click', () => {
+      if (searchInput) searchInput.value = '';
+      clearSearchBtn.style.display = 'none';
       loadQuotes();
-    }, 300);
-  });
-
-  clearSearchBtn.addEventListener('click', () => {
-    searchInput.value = '';
-    clearSearchBtn.style.display = 'none';
-    loadQuotes();
-  });
+    });
+  }
 
   // Source filter dropdown
   const sourceFilter = document.getElementById('sourceFilter');
@@ -368,6 +401,10 @@ function filterQuotes(quotes, filters) {
 // ============================================================================
 function renderQuotes(quotes) {
   // Clear existing quotes
+  if (!quoteList) {
+    console.error('[Popup] quoteList element not found');
+    return;
+  }
   quoteList.innerHTML = '';
 
   if (quotes.length === 0) {
@@ -1223,8 +1260,9 @@ async function removeTagFromQuote(tagToRemove) {
     const quoteIndex = quotes.findIndex(q => q.id === currentQuote.id);
     if (quoteIndex === -1) return;
 
-    // Remove tag
-    quotes[quoteIndex].tags = quotes[quoteIndex].tags.filter(t => t !== tagToRemove);
+    // Remove tag (with null check for legacy quotes without tags)
+    const currentTags = quotes[quoteIndex].tags || [];
+    quotes[quoteIndex].tags = currentTags.filter(t => t !== tagToRemove);
 
     // Save to storage
     await chrome.storage.local.set({ quotes: quotes });
@@ -1499,6 +1537,9 @@ async function downloadBibliographyFromPreview() {
 
 // Escape HTML to prevent XSS
 function escapeHtml(text) {
+  if (text === null || text === undefined) {
+    return '';
+  }
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
@@ -1853,8 +1894,8 @@ function parseAuthors(authorString) {
 // Generate MLA citation format with hanging indent
 async function generateMlaCitation(quote, useAI = false) {
   // Use extracted author or fallback to "Unknown Author"
-  const authorFull = quote.author || 'Unknown Author';
-  const url = formatUrlForMla(quote.sourceUrl);
+  const authorFull = escapeHtml(quote.author || 'Unknown Author');
+  const url = escapeHtml(formatUrlForMla(quote.sourceUrl));
 
   // MLA requires BOTH dates:
   // - Publication date (creationDate if available, otherwise no publication date)
@@ -1863,7 +1904,9 @@ async function generateMlaCitation(quote, useAI = false) {
   const accessDate = formatDateForMla(quote.timestamp);
 
   // Parse title to extract clean title and website name
-  const { cleanTitle, websiteName } = parseTitleAndWebsite(quote.sourceTitle, quote.sourceUrl, quote.sourceName);
+  const parsed = parseTitleAndWebsite(quote.sourceTitle, quote.sourceUrl, quote.sourceName);
+  const cleanTitle = escapeHtml(parsed.cleanTitle);
+  const websiteName = escapeHtml(parsed.websiteName);
 
   // Rule-based source type detection
   const sourceType = detectSourceType(quote.sourceTitle, quote.sourceUrl);
@@ -2064,7 +2107,7 @@ async function generateMlaCitation(quote, useAI = false) {
 // Generate APA citation format with hanging indent
 async function generateApaCitation(quote, useAI = false) {
   // Use extracted author or fallback to "Unknown Author"
-  const authorFull = quote.author || 'Unknown Author';
+  const authorFull = escapeHtml(quote.author || 'Unknown Author');
 
   // Smart date selection: Use creation date for year (crucial for APA!)
   let timestamp, year;
@@ -2076,10 +2119,12 @@ async function generateApaCitation(quote, useAI = false) {
     year = timestamp.getUTCFullYear();
   }
 
-  const url = quote.sourceUrl; // APA keeps https://
+  const url = escapeHtml(quote.sourceUrl); // APA keeps https://
 
   // Parse title to extract clean title and website name
-  const { cleanTitle, websiteName } = parseTitleAndWebsite(quote.sourceTitle, quote.sourceUrl, quote.sourceName);
+  const parsed = parseTitleAndWebsite(quote.sourceTitle, quote.sourceUrl, quote.sourceName);
+  const cleanTitle = escapeHtml(parsed.cleanTitle);
+  const websiteName = escapeHtml(parsed.websiteName);
 
   // Rule-based source type detection
   const sourceType = detectSourceType(quote.sourceTitle, quote.sourceUrl);
@@ -2259,7 +2304,7 @@ async function generateApaCitation(quote, useAI = false) {
 // Generate Chicago citation format (Notes-Bibliography style)
 async function generateChicagoCitation(quote, useAI = false) {
   // Use extracted author or fallback to "Unknown Author"
-  const authorFull = quote.author || 'Unknown Author';
+  const authorFull = escapeHtml(quote.author || 'Unknown Author');
 
   // Smart date selection: Use creation date if available
   let dateStr = '';
@@ -2270,10 +2315,12 @@ async function generateChicagoCitation(quote, useAI = false) {
     dateStr = `Accessed ${formatDateForChicago(quote.timestamp)}`;
   }
 
-  const url = quote.sourceUrl; // Chicago keeps full URL
+  const url = escapeHtml(quote.sourceUrl); // Chicago keeps full URL
 
   // Parse title to extract clean title and website name
-  const { cleanTitle, websiteName } = parseTitleAndWebsite(quote.sourceTitle, quote.sourceUrl, quote.sourceName);
+  const parsed = parseTitleAndWebsite(quote.sourceTitle, quote.sourceUrl, quote.sourceName);
+  const cleanTitle = escapeHtml(parsed.cleanTitle);
+  const websiteName = escapeHtml(parsed.websiteName);
 
   // Rule-based source type detection
   const sourceType = detectSourceType(quote.sourceTitle, quote.sourceUrl);
@@ -2544,15 +2591,31 @@ function shortenTitle(title) {
   return words.slice(0, 4).join(' ') + '...';
 }
 
+// ============================================================================
+// THEME SWITCHER (Temporary)
+// ============================================================================
+function applyTheme(themeName) {
+  const stylesheet = document.querySelector('link[rel="stylesheet"]');
+  if (stylesheet) {
+    stylesheet.setAttribute('href', `themes/${themeName}.css`);
+  }
+}
+
 // Show toast notification
 function showToast(message) {
   const toastMessage = document.getElementById('toastMessage');
+  if (!toastMessage || !notificationToast) {
+    console.warn('[Popup] Toast elements not found');
+    return;
+  }
   toastMessage.textContent = message;
   notificationToast.classList.add('show');
 
   // Auto-hide after 3 seconds
   setTimeout(() => {
-    notificationToast.classList.remove('show');
+    if (notificationToast) {
+      notificationToast.classList.remove('show');
+    }
   }, 3000);
 }
 
@@ -2713,12 +2776,18 @@ async function loadSettingsUI() {
   try {
     const preferences = await loadPreferences();
 
-    // Update form fields
-    document.getElementById('includeMLA').checked = preferences.includeMLA;
-    document.getElementById('includeAPA').checked = preferences.includeAPA;
-    document.getElementById('includeMetadata').checked = preferences.includeMetadata;
-    document.getElementById('sortOrder').value = preferences.sortOrder;
-    document.getElementById('autoRefresh').checked = preferences.autoRefresh;
+    // Update form fields with null checks
+    const includeMLA = document.getElementById('includeMLA');
+    const includeAPA = document.getElementById('includeAPA');
+    const includeMetadata = document.getElementById('includeMetadata');
+    const sortOrderEl = document.getElementById('sortOrder');
+    const autoRefresh = document.getElementById('autoRefresh');
+
+    if (includeMLA) includeMLA.checked = preferences.includeMLA;
+    if (includeAPA) includeAPA.checked = preferences.includeAPA;
+    if (includeMetadata) includeMetadata.checked = preferences.includeMetadata;
+    if (sortOrderEl) sortOrderEl.value = preferences.sortOrder;
+    if (autoRefresh) autoRefresh.checked = preferences.autoRefresh;
 
     console.log('Settings UI loaded from storage');
   } catch (error) {
@@ -2729,13 +2798,19 @@ async function loadSettingsUI() {
 // Save settings from UI to storage
 async function saveSettings() {
   try {
-    // Get values from UI
+    // Get values from UI with null checks
+    const includeMLA = document.getElementById('includeMLA');
+    const includeAPA = document.getElementById('includeAPA');
+    const includeMetadata = document.getElementById('includeMetadata');
+    const sortOrderEl = document.getElementById('sortOrder');
+    const autoRefresh = document.getElementById('autoRefresh');
+
     const settings = {
-      includeMLA: document.getElementById('includeMLA').checked,
-      includeAPA: document.getElementById('includeAPA').checked,
-      includeMetadata: document.getElementById('includeMetadata').checked,
-      sortOrder: document.getElementById('sortOrder').value,
-      autoRefresh: document.getElementById('autoRefresh').checked
+      includeMLA: includeMLA ? includeMLA.checked : true,
+      includeAPA: includeAPA ? includeAPA.checked : true,
+      includeMetadata: includeMetadata ? includeMetadata.checked : true,
+      sortOrder: sortOrderEl ? sortOrderEl.value : 'newest',
+      autoRefresh: autoRefresh ? autoRefresh.checked : true
     };
 
     // Save to storage

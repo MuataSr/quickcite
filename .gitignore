@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+
+# Python virtual environment
+quickcite-env/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build outputs
+dist/
+build/
+*.zip
+*.crx
+*.pem
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Chrome extension package files (generated)
+quickcite-*.zip
+
+# Test coverage
+coverage/
+
+# Claude/AI settings (keep local only)
+.claude/settings.local.json
